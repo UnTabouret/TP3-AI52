@@ -91,23 +91,77 @@ def mutation(chromosome):
 
 #algo génétique
 baseChromosome = list(range(NOMBRE_DE_VILLES))
-TAILLE_POPULATION = 10
-population = []
-for i in range(TAILLE_POPULATION):
+TAILLE_POPULATION_GENETIQUE = 10
+populationGenetique = []
+for i in range(TAILLE_POPULATION_GENETIQUE):
     random.shuffle(baseChromosome)
     newChromosome = baseChromosome.copy()
-    population.append(newChromosome)
-print("Population initiale génétique : ",population)
+    populationGenetique.append(newChromosome)
+print("Population initiale génétique : ",populationGenetique)
 ITERATIONS_GENETIQUE = 1000
 for i in range(ITERATIONS_GENETIQUE):
-    population.sort(key = lambda x: cal_distance(x,distances,NOMBRE_DE_VILLES))
-    population = population[:TAILLE_POPULATION-1]
-    for i in range(TAILLE_POPULATION):
-        population.append(mutation(population[i]))
-        population.append(croisementSinglePoint(population[i],population[(i+1)%TAILLE_POPULATION]))
+    populationGenetique.sort(key = lambda x: cal_distance(x,distances,NOMBRE_DE_VILLES))
+    populationGenetique = populationGenetique[:TAILLE_POPULATION_GENETIQUE-1]
+    for i in range(TAILLE_POPULATION_GENETIQUE):
+        populationGenetique.append(mutation(populationGenetique[i]))
+        populationGenetique.append(croisementSinglePoint(populationGenetique[i],populationGenetique[(i+1)%TAILLE_POPULATION_GENETIQUE]))
 
-for individu in population:
+for individu in populationGenetique:
     print("Path : ",individu, " with distance : ",cal_distance(individu,distances,NOMBRE_DE_VILLES))
+
+#colonie de fourmis
+
+ALPHA = 0.5
+BETA = 0.9
+Q = 1
+RHO = 0.7
+THETA_ZERO = .001
+TAILLE_POPULATION_FOURMIS = 100
+ITERATIONS_FOURMIS = 100
+
+trace = np.zeros((NOMBRE_DE_VILLES,NOMBRE_DE_VILLES))
+deltaTrace = trace.copy()
+trace += THETA_ZERO
+
+def attractivity(origine,destination):
+    return pow(trace[origine][destination],ALPHA) * pow(1/distances[origine][destination],BETA)
+
+def chooseNextCity(fourmi):
+    targetList = []
+    attractivities = []
+    for i in range(NOMBRE_DE_VILLES):
+        if i in fourmi:continue
+        targetList.append(i)
+        attractivities.append(attractivity(fourmi[-1],i))
+    return random.choices(population=targetList,weights=attractivities,k=1)
+
+
+def deposerTrace(fourmi):
+    longueur = cal_distance(fourmi,distances,NOMBRE_DE_VILLES)
+    for i in range(NOMBRE_DE_VILLES-1):
+        deltaTrace[fourmi[i]][fourmi[i+1]]+=Q/longueur
+    
+def evaporation():
+    for row in trace:
+        for element in row:
+            element *= (1-RHO)
+
+
+for i in range(ITERATIONS_FOURMIS):
+    populationFourmis = [[] for i in range(TAILLE_POPULATION_FOURMIS)]
+    for fourmi in populationFourmis:
+        fourmi.append(random.randint(0,NOMBRE_DE_VILLES-1))
+        for j in range(NOMBRE_DE_VILLES-1):
+            fourmi.append(chooseNextCity(fourmi)[0])
+        deposerTrace(fourmi)
+    evaporation()
+    trace += deltaTrace
+    deltaTrace = np.zeros((NOMBRE_DE_VILLES,NOMBRE_DE_VILLES))
+
+print("fourmis : ", populationFourmis)
+
+
+
 
 
 def create_circle(x, y, r, canvas): #center coordinates, radius
@@ -129,7 +183,7 @@ graph.pack()
 
 
 #Dessin chemin
-tracerChemin(population[0],graph)
+tracerChemin(populationFourmis[0],graph)
 
 #Dessin villes
 i=0
