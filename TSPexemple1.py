@@ -70,6 +70,44 @@ for i in range(100):
 
 print('voici la solution retenue ',min_sol,' et son coût ', cal_distance(min_sol,distances,NOMBRE_DE_VILLES))
 
+def croisementSinglePoint(chromosome1,chromosome2):
+    fils = [-1]*NOMBRE_DE_VILLES
+    midpoint = int(NOMBRE_DE_VILLES/2)
+    fils[:midpoint] = chromosome1[:midpoint]
+    for i in range(midpoint,NOMBRE_DE_VILLES):
+        j=0
+        while chromosome2[j] in fils:
+            j+=1
+        fils[i] = chromosome2[j]
+    return fils
+
+
+def mutation(chromosome):
+    fils = chromosome.copy()
+    source = random.randint(0,NOMBRE_DE_VILLES-1)
+    destination = random.randint(0,NOMBRE_DE_VILLES-1)
+    fils[source],fils[destination]= fils[destination],fils[source]  
+    return fils
+
+#algo génétique
+baseChromosome = list(range(NOMBRE_DE_VILLES))
+TAILLE_POPULATION = 10
+population = []
+for i in range(TAILLE_POPULATION):
+    random.shuffle(baseChromosome)
+    newChromosome = baseChromosome.copy()
+    population.append(newChromosome)
+print("Population initiale génétique : ",population)
+ITERATIONS_GENETIQUE = 1000
+for i in range(ITERATIONS_GENETIQUE):
+    population.sort(key = lambda x: cal_distance(x,distances,NOMBRE_DE_VILLES))
+    population = population[:TAILLE_POPULATION-1]
+    for i in range(TAILLE_POPULATION):
+        population.append(mutation(population[i]))
+        population.append(croisementSinglePoint(population[i],population[(i+1)%TAILLE_POPULATION]))
+
+for individu in population:
+    print("Path : ",individu, " with distance : ",cal_distance(individu,distances,NOMBRE_DE_VILLES))
 
 
 def create_circle(x, y, r, canvas): #center coordinates, radius
@@ -91,7 +129,7 @@ graph.pack()
 
 
 #Dessin chemin
-tracerChemin(min_sol,graph)
+tracerChemin(population[0],graph)
 
 #Dessin villes
 i=0
