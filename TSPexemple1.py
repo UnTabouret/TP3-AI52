@@ -3,7 +3,7 @@
 import random
 import numpy as np
 import tkinter as tk
-
+import PIL
 
 # Données du problème (générées aléatoirement)
 NOMBRE_DE_VILLES = 10
@@ -110,9 +110,8 @@ for individu in populationGenetique:
     print("Path : ",individu, " with distance : ",cal_distance(individu,distances,NOMBRE_DE_VILLES))
 
 #colonie de fourmis
-
 ALPHA = 0.5
-BETA = 0.9
+BETA = 0.5
 Q = 1
 RHO = 0.7
 THETA_ZERO = .001
@@ -157,10 +156,6 @@ for i in range(ITERATIONS_FOURMIS):
     evaporation()
     trace += deltaTrace
     deltaTrace = np.zeros((NOMBRE_DE_VILLES,NOMBRE_DE_VILLES))
-
-print("fourmis : ", populationFourmis)
-
-
 
 
 
